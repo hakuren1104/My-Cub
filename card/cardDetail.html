@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+    <!-- Dongle 폰트 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<!-- 사용자 CSS 추가 -->
+<th:block layout:fragment="css">
+    <style>
+        body {
+            background-color: #f5e8e0; /* 부드러운 크림색 배경 */
+            font-family: 'Dongle', sans-serif; /* Dongle 폰트 적용 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff4e6; /* 부드러운 오프 화이트 */
+            border-radius: 15px;
+            padding: 30px; /* 패딩을 더 추가 */
+            width: 1200px;
+            margin: 50px auto;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px; /* 여백을 늘림 */
+        }
+
+        .header img {
+            width: 300px; /* 이미지 크기 증가 */
+            height: auto;
+            border-radius: 10px;
+            margin-right: 30px; /* 여백을 늘림 */
+            margin-left : 100px;
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .card-info h2 {
+            color: #6f4f28; /* 제목 색상 */
+            font-size: 4.5rem; /* 제목 크기 증가 */
+            margin-bottom: 15px; /* 여백을 늘림 */
+            margin-left: 300px;
+        }
+
+        .card-info p {
+            margin: 10px 0; /* 여백을 늘림 */
+            font-size: 4.5rem; /* 텍스트 크기 증가 */
+            color: #8e5a4d; /* 갈색 포인트 색상 */
+            margin-left: 300px;
+        }
+
+        .details {
+            margin-top: 30px; /* 여백을 늘림 */
+            padding: 20px;
+            border: 1px solid #d4a373;
+            border-radius: 10px;
+            background-color: #fff;
+        }
+
+        .details h3 {
+            color: #6f4f28; /* 제목 색상 */
+            font-size: 2rem; /* 제목 크기 증가 */
+            margin-bottom: 20px; /* 여백을 늘림 */
+        }
+
+        .details p {
+            font-size: 1.5rem; /* 텍스트 크기 증가 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+        }
+
+        .image-gallery {
+            margin-top: 30px; /* 여백을 늘림 */
+        }
+
+        .image-gallery h3 {
+            font-size: 2rem; /* 제목 크기 증가 */
+            margin-bottom: 15px; /* 여백을 늘림 */
+            color: #6f4f28; /* 제목 색상 */
+        }
+
+        .image-gallery img {
+            width: 400px; /* 이미지 최대 폭 증가 */
+            margin-bottom: 20px; /* 여백을 늘림 */
+            border-radius: 10px;
+        }
+    </style>
+</th:block>
+<body>
+<div class="container" layout:fragment="content">
+    <div class="header">
+        <img th:src="${item.itemImgDtoList[0].imgUrl}" alt="메인 이미지"> <!-- 메인 이미지 -->
+        <div class="card-info">
+            <h2 th:text="${item.itemNm}"></h2>
+            <p><strong>색상:</strong> <span th:text="${item.cardColor}"></span></p>
+            <p><strong>종류:</strong> <span th:text="${item.cardValue}"></span></p>
+            <p><strong>시리즈:</strong> <span th:text="${item.cardSeries}"></span></p>
+        </div>
+    </div>
+
+    <div class="details">
+        <h3>쿠키 이야기</h3>
+        <p th:text="${item.itemDetail}"></p>
+    </div>
+
+    <div class="image-gallery">
+        <div th:each="img : ${item.itemImgDtoList}">
+            <img th:if="${not #strings.isEmpty(img.imgUrl)}" th:src="${img.imgUrl}" alt="추가 이미지">
+        </div>
+    </div>
+</div>
+</body>
+</html>

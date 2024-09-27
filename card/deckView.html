@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>덱 상세 보기</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Fonts Dongle 폰트 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f5e8e0; /* 부드러운 크림색 배경 */
+            font-family: 'Dongle', sans-serif; /* 깔끔하고 현대적인 글꼴 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+            margin: 0;
+            padding: 0;
+        }
+
+        .deck-container {
+            width: 80%;
+            margin: 20px auto; /* 컨테이너 위치 중앙 정렬 */
+            background-color: #fff4e6; /* 부드러운 오프 화이트 배경 */
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .deck-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .deck-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .deck-header .btn-container {
+            display: flex;
+            gap: 10px; /* 버튼 사이의 간격 */
+        }
+
+        .deck-header .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #5c4033; /* 버튼 색상 */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .deck-header .btn:hover {
+            background-color: #4a3226; /* 버튼 호버 색상 */
+        }
+
+        h1 {
+            text-align: center;
+            margin: 40px 0; /* 헤더와 본문 사이의 여백 추가 */
+            font-size: 2rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        h1:after {
+            content: "";
+            display: block;
+            width: 60%;
+            max-width: 500px;
+            height: 2px;
+            background-color: #d19a5b; /* 줄 색상 */
+            margin: 10px auto 0; /* 줄과 제목 사이의 여백 */
+        }
+
+        .card-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card-item {
+            margin: 10px;
+            max-width: 200px;
+            text-align: center;
+        }
+
+        .card-item img {
+            max-width: 150px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .card-item p {
+            margin-top: 5px;
+            font-size: 1.2rem;
+            color: #5c4033;
+        }
+
+        #drawButton {
+            display: block;
+            margin: 20px auto;
+            padding: 5px 10px;
+            font-size: 1.3rem;
+            background-color: #5c4033;
+            color: #fff;
+            width: 150px;
+            height: auto;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #drawButton:hover {
+            background-color: #4a3226;
+        }
+
+        #drawResult {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>덱 상세 보기</h1>
+    <div class="deck-container">
+        <input type="hidden" id="deckId" th:value="${deck.id}" />
+        <div class="deck-header">
+            <div>
+                <h2>덱 이름: <span th:text="${deck.name}"></span></h2>
+                <h2>제작자: <span th:text="${deck.writer}"></span></h2>
+            </div>
+            <div class="btn-container">
+                <a href="/deck/boardMain" class="btn">목록으로 돌아가기</a>
+                <button class="btn btn-delete" onclick="handleDelete()">삭제</button>
+            </div>
+        </div>
+
+        <div class="card-list">
+            <div th:each="card : ${cards}">
+                <div class="card-item"
+                     th:attr="data-img-url=${card.imgUrl}, data-count=${card.count}">
+                    <img th:src="${card.imgUrl}" alt="Card Image"/>
+                    <p>수량: <span th:text="${card.count}"></span></p>
+                </div>
+            </div>
+        </div>
+        <button id="drawButton">멀리건 시뮬레이션</button>
+        <!-- 멀리건 결과 표시 영역 -->
+        <div id="drawResult"></div>
+    </div>
+</div>
+</body>
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            var cardItems = Array.from(document.querySelectorAll('.card-item'));
+            var drawButton = document.getElementById('drawButton');
+            var drawResult = document.getElementById('drawResult');
+
+            function drawCards() {
+                drawResult.innerHTML = ''; // 결과 초기화
+
+                var cards = [];
+                cardItems.forEach(function (item) {
+                    var count = parseInt(item.getAttribute('data-count'), 10);
+                    var imgUrl = item.getAttribute('data-img-url');
+                    console.log('Card found: ', imgUrl, count); // 디버깅: 카드 정보 출력
+                    for (var i = 0; i < count; i++) {
+                        cards.push({
+                            imgUrl: imgUrl
+                        });
+                    }
+                });
+
+                console.log('All cards: ', cards); // 디버깅: 모든 카드 출력
+
+                var shuffledCards = cards.sort(() => 0.5 - Math.random());
+                var selectedCards = shuffledCards.slice(0, 6);
+
+                console.log('Selected cards: ', selectedCards); // 디버깅: 선택된 카드 출력
+
+                selectedCards.forEach(function (card) {
+                    var img = document.createElement('img');
+                    img.src = card.imgUrl;
+                    img.alt = 'Drawn Card';
+                    img.style.maxWidth = '150px';
+                    img.style.maxHeight = '200px';
+                    img.style.margin = '10px';
+                    drawResult.appendChild(img);
+                });
+            }
+
+            drawButton.addEventListener('click', drawCards);
+        });
+
+        // Function to handle delete action
+        function handleDelete() {
+            var deckId = /*[[${deck.id}]]*/ 0; // get deckId from Thymeleaf context
+            var deckPassword = /*[[${deck.password}]]*/ ""; // get deckPassword from Thymeleaf context
+
+            // Prompt user for password
+            var inputPassword = prompt("덱을 삭제하려면 비밀번호를 입력하세요:");
+
+            // Validate password
+            if (inputPassword === deckPassword) {
+                // Password is correct, proceed with deletion
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/deck/deleteDeck", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.setRequestHeader("X-CSRF-TOKEN", document.querySelector('meta[name="_csrf"]').getAttribute('content'));
+
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        alert("덱이 삭제되었습니다.");
+                        window.location.href = "/deck/boardMain"; // Redirect to board list
+                    } else {
+                        alert("덱 삭제에 실패했습니다.");
+                    }
+                };
+
+                xhr.send("deckId=" + encodeURIComponent(deckId));
+            } else {
+                // Password is incorrect
+                alert("비밀번호가 틀렸습니다.");
+            }
+        }
+    </script>
+</th:block>
+</html>

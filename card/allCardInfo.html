@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>상품 목록</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS 추가 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- CSS 블록 -->
+    <style>
+        body {
+            background-color: #f5e8e0; /* 부드러운 크림색 배경 */
+            font-family: 'Arial', sans-serif; /* 깔끔하고 현대적인 글꼴 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+            margin: 0;
+            padding: 0;
+            font-family: 'Dongle', sans-serif !important;
+        }
+
+        /* 컨테이너 스타일 */
+        .container {
+            background-color: #fff4e6; /* 부드러운 오프 화이트 */
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 1200px; /* 컨테이너 최대 너비 조정 */
+            margin: 50px auto;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+            text-align: center; /* 내부 요소들 가운데 정렬 */
+        }
+
+        .card-container {
+            background-color: #fff4e6; /* 부드러운 오프 화이트 배경 */
+            border-radius: 15px; /* 둥근 모서리 */
+            padding: 25px; /* 내부 여백 */
+            width: 1150px; /* 최대 너비 조정 */
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+        }
+
+        /* 필터 버튼 스타일 */
+        .filter-buttons {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #d19a5b; /* 구분선 추가 */
+        }
+
+        .filter-buttons h5 {
+            font-size: 1.5rem; /* 글씨 크기 확대 */
+            font-weight: bold;
+            color: #8e5a4d; /* 갈색 포인트 색상 */
+            margin-bottom: 15px;
+            text-align: center; /* 가운데 정렬 */
+        }
+
+        .filter-buttons .filter-group {
+            margin-bottom: 20px;
+        }
+
+        .filter-checkbox {
+            margin-left: 15px; /* 체크박스와 레이블 사이의 간격 (왼쪽으로 조정) */
+            margin-right: 0px;
+            vertical-align: middle; /* 체크박스와 텍스트를 가운데 맞춤 */
+            height: 1.5rem; /* 체크박스 높이 */
+            width: 1.5rem; /* 체크박스 너비 */
+        }
+
+        .filter-checkbox + label {
+            font-size: 1.25rem; /* 레이블 글씨 크기 확대 */
+            vertical-align: middle; /* 체크박스와 텍스트를 가운데 맞춤 */
+            line-height: 1.5rem; /* 체크박스와 텍스트 높이 맞춤 */
+            margin-bottom: 0; /* 레이블과 체크박스의 수직 간격 조정 */
+        }
+
+        .product-list-header {
+            font-size: 2.5rem; /* 글씨 크기 확대 */
+            font-weight: bold;
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .product-list-header:after {
+            content: "";
+            display: block;
+            width: 80%;
+            max-width: 800px;
+            height: 2px;
+            background-color: #d19a5b; /* 구분선 색상 */
+            margin: 15px auto;
+        }
+
+        .item-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .item {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 15px;
+            width: 200px;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .item:hover {
+            transform: scale(1.05);
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .item img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        .item-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .item-details {
+            margin-top: 10px;
+            color: #7d5a50; /* 텍스트 색상 */
+        }
+
+        .deck-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start; /* 왼쪽 정렬 */
+        position: fixed; /* 페이지 스크롤 시 위치 고정 */
+        top: 170px; /* 상단 여백 (기존 20px에서 150px 추가) */
+        right: 20px; /* 오른쪽 여백 */
+        width: 300px; /* 너비 조정 */
+        background-color: #fff; /* 배경 색상 */
+        border: 1px solid #ddd; /* 테두리 색상 */
+        border-radius: 10px; /* 둥근 모서리 */
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+        padding: 15px; /* 내부 여백 */
+        overflow-y: auto; /* 내용이 넘칠 경우 스크롤 표시 */
+        max-height: calc(100vh - 200px); /* 최대 높이 설정 (전체 화면 높이의 100vh - 덱 컨테이너의 위치) */
+    }
+
+    .deck-title {
+        font-size: 1.5rem; /* 제목 글씨 크기 */
+        font-weight: bold;
+        margin-bottom: 15px; /* 제목과 덱 리스트 사이 간격 */
+        color: #5c4033; /* 제목 색상 */
+    }
+
+    .deck-list {
+        width: 100%; /* 전체 너비 차지 */
+    }
+
+    .deck-item {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    margin: 5px 0;
+    padding: 10px;
+    width: 100%;
+    text-align: left;
+    display: flex; /* Flexbox 사용하여 요소 정렬 */
+    align-items: center; /* 중앙 정렬 */
+    justify-content: space-between; /* 요소 사이 간격 조정 */
+}
+
+.deck-item .quantity-controls {
+    display: flex;
+    align-items: center;
+}
+
+.deck-item .quantity-controls button {
+    background-color: #ddd;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin: 0 2px;
+}
+
+.deck-item .quantity-controls span {
+    margin: 0 10px;
+    font-weight: bold;
+}
+
+    </style>
+    <!-- JavaScript 블록 -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <th:block layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function() {
+    // 페이지 로드 시 모든 아이템 로드
+    loadItems();
+
+    // 체크박스 변경 시 동작
+    $(".filter-checkbox").on("change", function() {
+        var filters = {
+            color: $(".filter-checkbox[data-filter-type='color']:checked").map(function() {
+                return $(this).val();
+            }).get().join(","),
+            type: $(".filter-checkbox[data-filter-type='type']:checked").map(function() {
+                return $(this).val();
+            }).get().join(","),
+            series: $(".filter-checkbox[data-filter-type='series']:checked").map(function() {
+                return $(this).val();
+            }).get().join(",")
+        };
+        loadItems(filters);
+    });
+
+    // 덱 만들기 모드 토글
+    $("#deckButton").on("click", function() {
+        $("#deckContainer").show();
+        $("#deckList").show();
+        $("#deckButton").hide();
+        $("#cancelDeckButton").show();
+    });
+
+    // 덱 만들기 취소
+    $("#cancelDeckButton").on("click", function() {
+        $("#deckContainer").hide();
+        $("#deckList").hide();
+        $("#deckButton").show();
+        $("#cancelDeckButton").hide();
+        $("#saveDeckButton").hide();
+        deck = []; // 덱 초기화
+        updateDeckList(); // 덱 리스트 업데이트
+    });
+
+    // 카드 클릭 시 이름, 색상, 시리즈, ID 추출
+    $(document).off("click", ".card").on("click", ".card", function() {
+        var cardElement = $(this);
+
+        if ($("#deckContainer").is(":visible")) {
+            // 덱 만들기 모드일 때 카드 추가
+            addCardToDeck(cardElement);
+        } else {
+            // 기본 모드일 때 카드 세부사항 로그
+            var cardName = cardElement.find('.card-name').text();
+            var cardColor = cardElement.find('.card-color').text();
+            var cardSeries = cardElement.find('.card-series').text();
+
+            console.log('Card Name:', cardName);
+            console.log('Card Color:', cardColor);
+            console.log('Card Series:', cardSeries);
+        }
+    });
+
+    // 덱 저장 버튼 클릭 이벤트
+    $("#deckForm").off("submit").on("submit", function(event) {
+        event.preventDefault(); // 기본 제출 동작 방지
+
+        if (ajaxInProgress) return; // AJAX 요청 진행 중이면 리턴
+        ajaxInProgress = true; // AJAX 요청 진행 중으로 설정
+
+        var deckName = $("#deckName").val().trim();
+        var deckWriter = $("#deckWriter").text().trim();
+        var deckPassword = $("#deckPassword").val().trim();
+
+        if (!deckName) {
+            alert('덱 이름을 입력하세요.');
+            ajaxInProgress = false; // AJAX 요청 종료 상태로 설정
+            return;
+        }
+
+        if (!deckPassword) {
+            alert('덱 비밀번호를 입력하세요.');
+            ajaxInProgress = false; // AJAX 요청 종료 상태로 설정
+            return;
+        }
+
+        if (deck.length === 0) {
+            alert('덱이 비어 있습니다.');
+            ajaxInProgress = false; // AJAX 요청 종료 상태로 설정
+            return;
+        }
+
+        var deckData = {
+            deckWriter: deckWriter,
+            deckName: deckName,
+            deckPassword: deckPassword,
+            cards: deck
+        };
+
+        var csrfHeader = $("meta[name='_csrf_header']").attr("content");
+        var csrfToken = $("meta[name='_csrf']").attr("content");
+
+        $.ajax({
+            url: '/deck/save',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(deckData),
+            headers: {
+                [csrfHeader]: csrfToken
+            },
+            success: function(response) {
+                alert('덱이 성공적으로 저장되었습니다.');
+                $("#deckContainer").hide();
+                $("#deckList").hide();
+                $("#deckButton").show();
+                $("#cancelDeckButton").hide();
+                $("#saveDeckButton").hide();
+                deck = []; // 덱 초기화
+                updateDeckList(); // 덱 리스트 업데이트
+            },
+            error: function(xhr, status, error) {
+                console.error('덱 저장 실패:', error);
+                alert('덱 저장에 실패했습니다.');
+            },
+            complete: function() {
+                ajaxInProgress = false; // AJAX 요청 종료 상태로 설정
+            }
+        });
+    });
+
+   // 수량 조절 버튼 클릭 이벤트 핸들러
+$(document).off('click', '.increment-btn').on('click', '.increment-btn', function(event) {
+    event.stopPropagation(); // 이벤트 전파 방지
+    event.preventDefault(); // 기본 이벤트 방지 (폼 제출 방지 등)
+
+    var cardItem = $(this).closest('.deck-item');
+    var cardName = cardItem.data('name');
+    var cardColor = cardItem.data('color');
+    var cardSeries = cardItem.data('series');
+
+    var card = deck.find(card => card.name === cardName && card.color === cardColor && card.series === cardSeries);
+
+    if (card) {
+        if (card.count < 4) { // 최대 4장까지 허용
+            if (getTotalCardCount() < maxDeckSize) { // 덱이 60장 이하일 때만 카드 수량 증가
+                card.count++;
+                updateDeckList();
+            } else {
+                alert('덱은 최대 60장까지 가능합니다.');
+            }
+        } else {
+            alert('같은 카드는 최대 4장까지만 추가할 수 있습니다.');
+        }
+    } else {
+        if (getTotalCardCount() < maxDeckSize) { // 덱이 60장 이하일 때만 새로운 카드 추가
+            addCardToDeck(cardItem);
+        } else {
+            alert('덱은 최대 60장까지 가능합니다.');
+        }
+    }
+});
+
+
+    // 페이지가 로드될 때 한 번만 등록되도록 보장
+    $(document).off('click', '.decrement-btn').on('click', '.decrement-btn', function(event) {
+        event.stopPropagation(); // 이벤트 전파 방지
+        var cardItem = $(this).closest('.deck-item');
+        var cardName = cardItem.data('name');
+        var cardColor = cardItem.data('color');
+        var cardSeries = cardItem.data('series');
+
+        var card = deck.find(card => card.name === cardName && card.color === cardColor && card.series === cardSeries);
+        if (card) {
+            if (card.count > 1) {
+                card.count--;
+            } else {
+                // 카드가 하나만 남아있으면 덱에서 제거
+                deck = deck.filter(c => !(c.name === cardName && c.color === cardColor && c.series === cardSeries));
+            }
+            updateDeckList();
+        }
+    });
+
+});
+
+var ajaxInProgress = false;
+var deck = []; // 덱 리스트
+var maxDeckSize = 60;
+
+// 아이템 로드
+function loadItems(filters = {}) {
+    if (ajaxInProgress) return;
+    ajaxInProgress = true;
+
+    var csrfHeader = $("meta[name='_csrf_header']").attr("content");
+    var csrfToken = $("meta[name='_csrf']").attr("content");
+
+    var filterData = JSON.stringify(filters);
+
+    $.ajax({
+        url: '/items/filter',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: filterData,
+        headers: {
+            [csrfHeader]: csrfToken
+        },
+        success: function(response) {
+            $('#itemContainer').html(response);
+        },
+        error: function(xhr, status, error) {
+            console.error('아이템 로드 실패:', error);
+        },
+        complete: function() {
+            ajaxInProgress = false;
+        }
+    });
+}
+
+// 카드 덱에 추가
+function addCardToDeck(cardElement) {
+    if (getTotalCardCount() >= maxDeckSize) {
+        alert('덱은 최대 60장까지 가능합니다.');
+        return;
+    }
+
+    var cardName = cardElement.find('.card-name').text();
+    var cardColor = cardElement.find('.card-color').text();
+    var cardSeries = cardElement.find('.card-series').text();
+    var cardImgUrl = cardElement.find('.card-img-url').text(); // 카드 이미지 URL 추가
+    var cardId = cardElement.find('.card-id').text(); // 카드 ID 추가
+
+    var cardInfo = {
+        id: cardId,
+        name: cardName,
+        color: cardColor,
+        series: cardSeries,
+        imgUrl: cardImgUrl,
+        count: 1 // 기본 카드 수량을 1로 설정
+    };
+
+    // 카드가 덱에 이미 존재하는지 확인
+    var existingCard = deck.find(card => card.id === cardInfo.id);
+
+    if (existingCard) {
+            if (existingCard.count < 4) { // 최대 4장까지 허용
+                existingCard.count++;
+            } else {
+                alert('같은 카드는 최대 4장까지만 추가할 수 있습니다.');
+                return;
+            }
+        } else {
+            deck.push(cardInfo);
+        }
+
+    updateDeckList(); // 덱 리스트 업데이트
+}
+
+// 덱 리스트 업데이트
+function updateDeckList() {
+    var deckList = $('#deckList');
+    deckList.empty();
+
+    // 카드 종류별로 정렬하기
+    var sortedDeck = {};
+    deck.forEach(function(card) {
+        var key = card.name; // 카드 이름으로 정렬
+        if (!sortedDeck[key]) {
+            sortedDeck[key] = [];
+        }
+        sortedDeck[key].push(card);
+    });
+
+    // 종류별로 줄 추가
+    for (var key in sortedDeck) {
+        var cards = sortedDeck[key];
+        cards.forEach(function(card) {
+            var cardInfo = `${card.name} - ${card.color} - ${card.series}`;
+            var cardCount = card.count > 1 ? ` (x${card.count})` : '';
+            var cardImgUrl = card.imgUrl; // 카드 이미지 URL 추가
+
+            var cardHtml = `
+                <div class="deck-item" data-name="${card.name}" data-color="${card.color}" data-series="${card.series}">
+                    <img src="${cardImgUrl}" alt="${cardInfo}" style="width: 50px; height: auto; margin-right: 10px;">
+                    <span>${cardInfo}${cardCount}</span>
+                    <div class="quantity-controls">
+                        <button class="decrement-btn">-</button>
+                        <button class="increment-btn">+</button>
+                    </div>
+                </div>
+            `;
+            deckList.append(cardHtml);
+        });
+    }
+    $('#deckCardCount').text('카드 수: ' + getTotalCardCount());
+}
+
+function getTotalCardCount() {
+    return deck.reduce((total, card) => total + card.count, 0);
+}
+
+        </script>
+</th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <!-- 전체 상품 목록 간판 -->
+    <div class="product-list-header">
+        브레이버스 카드 목록
+    </div>
+
+    <div class="container">
+        <div class="filter-buttons">
+            <div class="filter-group">
+                <h5>컬러</h5>
+                <div>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="color" value="RED" id="colorRed">
+                    <label for="colorRed">RED</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="color" value="YELLOW" id="colorYellow">
+                    <label for="colorYellow">YELLOW</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="color" value="GREEN" id="colorGreen">
+                    <label for="colorGreen">GREEN</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="color" value="PURPLE" id="colorPurple">
+                    <label for="colorPurple">PURPLE</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="color" value="BLUE" id="colorBlue">
+                    <label for="colorBlue">BLUE</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h5>종류</h5>
+                <div>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="type" value="COOKIE" id="typeCookie">
+                    <label for="typeCookie">COOKIE</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="type" value="ITEM" id="typeItem">
+                    <label for="typeItem">ITEM</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="type" value="TRAP" id="typeTrap">
+                    <label for="typeTrap">TRAP</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="type" value="STAGE" id="typeStage">
+                    <label for="typeStage">STAGE</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h5>시리즈</h5>
+                <div>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="series" value="ST" id="seriesST">
+                    <label for="seriesST">ST</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="series" value="BS1" id="seriesBS1">
+                    <label for="seriesBS1">BS1</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="series" value="BS2" id="seriesBS2">
+                    <label for="seriesBS2">BS2</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="series" value="BS3" id="seriesBS3">
+                    <label for="seriesBS3">BS3</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="series" value="BS4" id="seriesBS4">
+                    <label for="seriesBS3">BS4</label>
+                    <input type="checkbox" class="filter-checkbox" data-filter-type="series" value="PRO" id="seriesPRO">
+                    <label for="seriesPRO">PRO</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-container" id="itemContainer">
+            <!-- 상품 목록이 여기에 로드됩니다. -->
+        </div>
+    </div>
+
+    <!-- 덱 컨테이너 -->
+    <div id="deckContainer" class="deck-container">
+        <form id="deckForm">
+            <h2 class="deck-title">덱 메이커</h2>
+            <div>
+                <label for="deckWriter">덱 작성자:</label>
+                <span id="deckWriter" th:text="${member.nickName}" style="margin-left: 5px;"></span>
+            </div>
+
+            <div>
+                <label for="deckName">덱 이름:</label>
+                <input type="text" id="deckName" name="deckName" placeholder="덱 이름을 입력하세요">
+            </div>
+            <div>
+                <label for="deckName">비밀번호</label>
+                <input type="text" id="deckPassword" name="deckPassword" placeholder="덱 비밀번호를 설정하세요">
+            </div>
+            <span id="deckCardCount" class="deck-card-count">카드 수: 0</span>
+            <input type="hidden" id="deckData" name="deckData"> <!-- 덱 데이터 히든 필드 -->
+            <div id="deckList" class="deck-list">
+                <!-- 덱 항목들이 동적으로 삽입됩니다. -->
+            </div>
+            <div class="deck-mode-buttons">
+            <button type="submit" id="saveDeckButton" class="btn btn-success">덱 저장</button> <!-- 덱 저장 버튼 추가 -->
+            </div><!-- 덱 저장 버튼 추가 -->
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

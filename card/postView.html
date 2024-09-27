@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>게시글 상세보기</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f5e8e0; /* 부드러운 크림색 배경 */
+            font-family: 'Arial', sans-serif; /* 깔끔하고 현대적인 글꼴 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+            margin: 0;
+            padding: 0;
+            font-family: 'Dongle', sans-serif !important;
+        }
+
+        .container {
+            background-color: #fff4e6; /* 부드러운 오프 화이트 배경 */
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 1200px; /* 본문 최대 너비 조정 */
+            margin: 50px auto;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: center;
+            color: #8e5a4d; /* 제목 색상 */
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.8rem;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .img-container {
+            display: flex; /* 플렉스 박스 레이아웃 사용 */
+            flex-wrap: wrap; /* 이미지들이 한 줄에 다 들어가지 않으면 다음 줄로 감 */
+            gap: 100px; /* 이미지 사이의 간격을 100px로 설정 */
+            justify-content: center; /* 중앙 정렬 */
+        }
+
+        .img-container img {
+            border-radius: 10px;
+            width: 100%; /* 이미지 너비를 100%로 설정하여 컨테이너에 맞게 조정 */
+            max-width: 500px; /* 최대 너비 설정 */
+            height: auto; /* 이미지 높이를 자동 조정하여 비율 유지 */
+            object-fit: cover; /* 이미지 비율을 유지하면서 컨테이너에 맞게 크기 조정 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 버튼 스타일링 */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #d19a5b; /* 버튼 색상 */
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+
+        }
+
+        .btn:hover {
+            background-color: #b87a50; /* 버튼 호버 색상 */
+        }
+
+        .center {
+            text-align: center;
+        }
+
+        .comment {
+            margin-bottom: 20px; /* 댓글 간격 */
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dcdcdc; /* 회색 구분선 */
+            font-size: 2rem; /* 댓글 글씨 크기 2배 */
+        }
+
+        .text {
+            font-size: 1.3rem; /* 댓글 글씨 크기 2배 */
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .nickname {
+            font-weight: bold; /* 닉네임 강조 */
+        }
+
+        .time {
+            color: #888; /* 시간 색상 */
+            font-style: italic; /* 시간 기울임꼴 */
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button[type="submit"] {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: #d19a5b;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom:20px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #b87a50;
+        }
+        .delete-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background-color: #e74c3c; /* 붉은색 버튼 */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b; /* 호버 시 더 어두운 빨강 */
+        }
+
+        .delete-btn:focus {
+            outline: none; /* 포커스 시 테두리 제거 */
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3); /* 포커스 시 테두리 추가 */
+        }
+
+        .img-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .img-container img {
+            width: 300px;
+            height: 500px;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    </style>
+    <th:block layout:fragment="script">
+        <script th:inline="javascript">
+            $(document).ready(function() {
+
+    var csrfToken = $("meta[name='_csrf']").attr("content");
+    var csrfHeader = $("meta[name='_csrf_header']").attr("content");
+
+    $('#commentForm').off('submit').on('submit', function(event) {
+        event.preventDefault(); // 기본 폼 제출 방지
+
+        var postId = [[${post.id}]];
+        var memberId = [[${member.id}]];
+        var memberNickName = /*[[${member.nickName}]]*/ "";
+        var comment = document.getElementById('commentText').value;
+
+        var addSCData = {
+            postId: postId,
+            memberId: memberId,
+            memberNickName: memberNickName,
+            comment: comment
+        };
+
+        var AddSCRequest = JSON.stringify(addSCData);
+
+        $.ajax({
+            url: '/comments/addSC',
+            type: 'POST',
+            contentType: 'application/json',
+            data: AddSCRequest,
+            headers: {
+                [csrfHeader]: csrfToken // CSRF 토큰을 헤더에 추가
+            },
+            success: function(response) {
+                var newCommentHtml = `
+                    <div class="comment">
+                        <span class="text-muted">${response.memberNickName} / ${response.comment} / ${response.createdDate}</span>
+                        <button class="delete-btn" data-comment-id="${response.id}">삭제</button>
+                    </div>
+                `;
+                $('#commentList').append(newCommentHtml);
+                $('#commentText').val(''); // 입력 필드 비우기
+            },
+            error: function(error) {
+                console.log('Error:', error);
+            }
+        });
+    });
+
+    // Function to handle delete action
+    function handleDelete() {
+        var postId = /*[[${post.id}]]*/ 0; // get postId from Thymeleaf context
+        var postPassword = /*[[${post.password}]]*/ ""; // get postPassword from Thymeleaf context
+
+        // Prompt user for password
+        var inputPassword = prompt("게시글을 삭제하려면 비밀번호를 입력하세요:");
+
+        // Validate password
+        if (inputPassword === postPassword) {
+            // Password is correct, proceed with deletion
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/card/deleteFreePost", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.setRequestHeader("X-CSRF-TOKEN", document.querySelector('meta[name="_csrf"]').getAttribute('content'));
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    alert("게시글이 삭제되었습니다.");
+                    window.location.href = "/card/shop"; // Redirect to board list
+                } else {
+                    alert("게시글 삭제에 실패했습니다.");
+                }
+            };
+
+            xhr.send("postId=" + encodeURIComponent(postId));
+        } else {
+            // Password is incorrect
+            alert("비밀번호가 틀렸습니다.");
+        }
+    }
+
+
+
+    $('.comment').each(function() {
+        var commentMemberId = $(this).find('.delete-btn').data('comment-id');
+        var currentMemberId = [[${member.id}]];
+
+        if (commentMemberId === currentMemberId) {
+            $(this).find('.delete-btn').addClass('show-delete-btn'); // 버튼 보이기
+        }
+    });
+
+    // Delete button click handler
+    $('#commentList').off('click', '.delete-btn').on('click', '.delete-btn', function() {
+
+        var commentId = $(this).data('comment-id');
+        var $commentElement = $(this).closest('.comment');
+
+        var isConfirmed = confirm("정말 삭제하시겠습니까?");
+        if (!isConfirmed) {
+            return; // 사용자가 삭제를 취소하면 아무 것도 하지 않습니다.
+        }
+
+        $.ajax({
+            url: '/comments/deleteSC/' + commentId,
+            type: 'DELETE',
+            headers: {
+                [csrfHeader]: csrfToken
+            },
+            success: function(response) {
+                // 삭제 성공 시 댓글을 화면에서 제거합니다.
+                $commentElement.remove();
+                alert("댓글이 삭제되었습니다.");
+            },
+            error: function(error) {
+                console.log('Error:', error);
+            }
+        });
+    });
+
+});
+        </script>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <h1 th:text="${post.title}"></h1>
+        <p>작성자: <span th:text="${post.nickName}"></span></p>
+        <hr>
+        <p>거래 종류: <span th:text="${post.trade}"></span></p>
+        <hr>
+        <p th:text="${post.content}"></p>
+        <hr>
+
+        <div class="img-container">
+            <div th:each="imgDto : ${post.shopImgDtoList}">
+            <div th:if="${imgDto.imgUrl != null and imgDto.imgUrl != ''}">
+                <img th:src="@{${imgDto.imgUrl}}" alt="Image"/>
+            </div>
+            </div>
+        </div>
+        <form th:id="commentForm">
+            <textarea id="commentText" required placeholder="댓글을 입력하세요..."></textarea>
+            <button type="submit">댓글 달기</button>
+        </form>
+
+        <div id="commentList">
+            <!-- 댓글 리스트가 여기에 추가됩니다. -->
+            <div th:each="comment : ${comments}" class="comment">
+                <p class="text">
+                    <span class="nickname" th:text="${comment.memberNickName}"></span>
+                    / <span class="comment-text" th:text="${comment.comment}"></span>
+                    / <span th:text="${comment.createdDate}"></span>
+                    <button class="delete-btn" th:if="${comment.memberId == member.id}" th:data-comment-id="${comment.id}">삭제</button>
+                </p>
+            </div>
+        </div>
+
+        <!-- 버튼 추가 예시 -->
+        <div class="center">
+            <a href="/card/shop" class="btn">목록으로 돌아가기</a>
+            <button class="btn btn-delete" onclick="handleDelete()">삭제</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>자유 게시판</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Fonts Dongle 폰트 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f5e8e0; /* 부드러운 크림색 배경 */
+            font-family: 'Dongle', sans-serif; /* 깔끔하고 현대적인 글꼴 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            text-align: center;
+            margin: 40px 0; /* 헤더와 본문 사이의 여백 추가 */
+            position: relative;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .header h2:after {
+            content: "";
+            display: block;
+            width: 80%;
+            max-width: 600px;
+            height: 2px;
+            background-color: #d19a5b; /* 밑줄 색상 */
+            margin: 10px auto 0;
+        }
+
+        .board-container {
+            width: 90%;
+            margin: 0 auto; /* 게시판 전체의 위치 조정 */
+            background-color: #fff4e6; /* 부드러운 오프 화이트 배경 */
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+            position: relative; /* 위치 설정 */
+        }
+
+        .button {
+            font-size: 1.4rem;
+            width: 100px;
+            background-color: #d19a5b; /* 부드러운 갈색 버튼 배경 */
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            display: inline-block; /* 버튼 정렬을 위해 inline-block 사용 */
+            line-height: 35px; /* 버튼 높이와 일치 */
+            transition: background-color 0.3s;
+            position: absolute;
+            bottom: 20px; /* 버튼을 테이블의 아래쪽으로 위치 */
+            right: 20px;
+        }
+
+        .button:hover {
+            background-color: #b87a50; /* 버튼 호버 색상 */
+        }
+
+        .table-container {
+            margin-top: 20px; /* 테이블 상단 여백 */
+            position: relative; /* 버튼의 절대 위치 설정을 위한 상대 위치 */
+            font-size: 1.5rem;
+            color: black;
+        }
+
+        .board-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .board-table th, .board-table td {
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center; /* 가운데 정렬 */
+        }
+
+        .board-table th {
+            background-color: #d19a5b; /* 부드러운 오렌지색 배경 */
+            color: black; /* 텍스트 색상 */
+        }
+
+        .board-table th.id, .board-table td.id,
+        .board-table th.nickName, .board-table td.nickName {
+            width: 15%; /* ID, 작성자 열 너비 */
+        }
+
+        .board-table th.title, .board-table td.title {
+            width: 55%; /* 제목 열 너비 */
+        }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center; /* 페이지네이션을 가운데 정렬 */
+        }
+
+        .pagination a {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #007bff;
+            margin: 0 5px;
+            border-radius: 5px;
+        }
+
+        .pagination a:hover {
+            background-color: #f4f4f4;
+        }
+
+        .pagination .active a {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="header">
+        <h2>자유 게시판</h2>
+    </div>
+
+    <div class="board-container">
+        <div class="table-container">
+            <table class="board-table">
+                <thead>
+                <tr>
+                    <th class="id">번호</th>
+                    <th class="nickName">작성자</th>
+                    <th class="title">제목</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- dtos 리스트의 각 항목을 반복하여 테이블 행으로 출력 -->
+                <tr th:each="dto : ${dtos.content}">
+                    <td th:text="${dto.id}"></td>
+                    <td th:text="${dto.nickName}"></td>
+                    <td>
+                        <a th:href="@{/freePost/view/{id}(id=${dto.id})}" th:text="${dto.title}"></a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <div class="pagination">
+            <span th:if="${dtos.hasPrevious()}">
+                <a href="#" th:href="@{/card/board(page=${dtos.number - 1})}">이전 페이지</a>
+            </span>
+            <span th:each="pageNum : ${#numbers.sequence(0, dtos.totalPages - 1)}">
+                <span th:classappend="${pageNum == dtos.number} ? 'active' : ''">
+                    <a href="#" th:href="@{/card/board(page=${pageNum})}" th:text="${pageNum + 1}"></a>
+                </span>
+            </span>
+            <span th:if="${dtos.hasNext()}">
+                <a href="#" th:href="@{/card/board(page=${dtos.number + 1})}">다음 페이지</a>
+            </span>
+        </div>
+        <button class="button" onclick="window.location.href='/card/freePostWrite'">글쓰기</button>
+    </div>
+</div>
+</body>
+</html>

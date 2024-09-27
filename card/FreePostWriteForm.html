@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <title>자유 게시판 글쓰기</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Google Fonts Dongle 폰트 추가 -->
+    <link href="https://fonts.googleapis.com/css2?family=Dongle:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f5e8e0; /* 부드러운 크림색 배경 */
+            font-family: 'Dongle', sans-serif; /* Dongle 글꼴 적용 */
+            color: #5c4033; /* 어두운 갈색 텍스트 */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 컨테이너 스타일 */
+        .container {
+            background-color: #fff4e6; /* 부드러운 오프 화이트 */
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 800px;
+            margin-top: 30px;
+            margin-bottom: 70px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+            font-size:1.5rem;
+        }
+
+        .form-group, .input-group {
+            margin-bottom: 20px; /* 입력 칸들 사이의 간격 조정 */
+        }
+
+        /* 레이블 및 텍스트 스타일 */
+        .input-group-text, .form-group label {
+            font-weight: bold;
+            color: #8e5a4d; /* 갈색 포인트 색상 */
+            font-size:1.4rem;
+        }
+
+        .auction-icon {
+            display: block;
+            margin: auto;
+            width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* 입력 필드 스타일 */
+        .form-control, .form-select, textarea {
+            border: 1px solid #d4a373; /* 갈색 테두리 */
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            font-size:1.4rem;
+        }
+
+        .form-control.title {
+            height: 80px; /* 줄어든 높이 */
+            resize: vertical; /* 세로로만 크기 조절 가능 */
+        }
+
+        .form-control.content {
+            height: 200px; /* 늘어난 높이 */
+            resize: vertical; /* 세로로만 크기 조절 가능 */
+        }
+
+        /* 버튼 스타일 */
+        .btn-primary {
+            background-color: #d19a5b; /* 부드러운 갈색 */
+            border: none;
+            margin: 10px 5px;
+            width: 150px;
+            height: 45px;
+            font-size: 16px;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #b87a50; /* 어두운 갈색으로 변경 */
+        }
+
+        .fieldError {
+            color: #d9534f; /* 에러 메시지 색상 */
+            font-size: 14px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #6f4f28; /* 제목 색상 */
+            margin-bottom: 30px;
+        }
+
+        /* 이미지 라벨 스타일 */
+        .image.input-group-text {
+            font-size: 1.4rem;
+            color: #6f4f28; /* 라벨 색상 */
+        }
+
+        /* 이미지 선택 필드 스타일 */
+        .imageFile.form-control {
+            border: 1px solid #d4a373;
+            padding: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .imageFile.form-control:hover {
+            border-color: #b87a50; /* 마우스 오버 시 테두리 색상 변경 */
+        }
+
+        input[type="hidden"] {
+            display: none;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            text-align: center; /* 페이지네이션을 가운데 정렬 */
+        }
+
+        .pagination a {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #007bff;
+            margin: 0 5px;
+            border-radius: 5px;
+        }
+
+        .pagination a:hover {
+            background-color: #f4f4f4;
+        }
+
+        .pagination .active a {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+        /* 헤더 스타일 */
+        h2 {
+            text-align: center;
+            color: #6f4f28; /* 제목 색상 */
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <form role="form" class="container" method="post" enctype="multipart/form-data" th:object="${freePostFormDto}">
+        <h2 class="header">자유게시판 글쓰기</h2>
+
+        <img th:src="@{/img/밤톨이.png}" class="auction-icon">
+        <input type="hidden" th:field="*{id}">
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">작성자</span>
+            </div>
+            <input type="text" th:field="*{nickName}" class="form-control" readonly>
+        </div>
+        <p th:if="${#fields.hasErrors('nickName')}" th:errors="*{nickName}" class="fieldError">Incorrect data</p>
+
+
+
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">비밀번호</span>
+            </div>
+            <input type="text" th:field="*{password}" class="form-control" placeholder="비밀번호를 입력해주세요.">
+        </div>
+        <p th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="fieldError">Incorrect data</p>
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">제목</span>
+            </div>
+            <input type="text" th:field="*{title}" class="form-control" placeholder="제목을 입력해주세요.">
+        </div>
+        <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="fieldError">Incorrect data</p>
+
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">내용</span>
+            </div>
+            <textarea class="form-control content" aria-label="With textarea" th:field="*{content}"></textarea>
+        </div>
+        <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="fieldError">Incorrect data</p>
+
+        <div th:if="${#lists.isEmpty(freePostFormDto.freeImgDtoList)}">
+            <div class="row" th:each="num: ${#numbers.sequence(1,5)}">
+                <div class="input-group mb3">
+                    <label class="image input-group-text" th:text="카드사진 + ${num}"></label>
+                    <input type="file" class="imageFile form-control" name="freePostImgFile">
+                </div>
+            </div>
+        </div>
+        <div th:if="${not #lists.isEmpty(freePostFormDto.freeImgDtoList)}">
+            <div class="row" th:each="freePostImgDto, status: ${freePostFormDto.freeImgDtoList}">
+                <div class="input-group mb3">
+                    <label class="image input-group-text" th:text="${not #strings.isEmpty(freePostImgDto.oriImgName)} ?
+                    ${freePostImgDto.oriImgName} : '상품이미지'+ ${status.index+1}"></label>
+                    <input type="file" class="imageFile form-control" name="freePostImgFile">
+                    <input type="hidden" name="freePostImgIds" th:value="${freePostImgDto.id}">
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#strings.isEmpty(freePostFormDto.id)}" class="button-container">
+            <button th:formaction="@{/freePost/new}" type="submit" class="btn btn-primary">저장</button>
+        </div>
+        <div th:unless="${#strings.isEmpty(freePostFormDto.id)}" class="button-container">
+            <button th:formaction="@{'/freePost/update'+${freePostFormDto.id}}" type="submit" class="btn btn-primary">수정</button>
+        </div>
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    </form>
+</div>
+</body>
+</html>
